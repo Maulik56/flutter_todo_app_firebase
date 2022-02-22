@@ -4,33 +4,40 @@ import 'package:flutter/material.dart';
 class ViewTodo extends StatelessWidget {
   ViewTodo({Key? key}) : super(key: key);
 
-  TextEditingController _textEditingControllerTitle = TextEditingController();
-  TextEditingController _textEditingControllerDec = TextEditingController();
+  final TextEditingController _textEditingControllerTitle =
+      TextEditingController();
+  final TextEditingController _textEditingControllerDec =
+      TextEditingController();
 
   CollectionReference todoCollection =
-      FirebaseFirestore.instance.collection('Todos');
+      FirebaseFirestore.instance.collection('Todo');
   final Stream<QuerySnapshot> _todoStream =
-      FirebaseFirestore.instance.collection('Todos').snapshots();
+      FirebaseFirestore.instance.collection('Todo').snapshots();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("My All Todo"),
+        title: const Text("My All Todo"),
       ),
       body: StreamBuilder<QuerySnapshot>(
         builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
           if (snapshot.hasError) {
-            return Center(child: Text('Something went wrong'));
+            return const Center(child: Text('Something went wrong'));
           } else if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: Text("Loading"));
+            return const Center(child: Text("Loading"));
           } else {
             return ListView.builder(
               itemBuilder: (BuildContext context, int index) {
                 return ListTile(
-                  title: Text("${snapshot.data!.docs[index]['title']}"),
+                  title: Text(
+                    "${snapshot.data!.docs[index]['title']}",
+                    style: const TextStyle(color: Colors.black),
+                  ),
                   subtitle: Text(
-                      "${snapshot.data!.docs[index]['description']}"), //isCompleted
+                    "${snapshot.data!.docs[index]['description']}",
+                    style: const TextStyle(color: Colors.black),
+                  ), //isCompleted
                   trailing: SizedBox(
                     width: 60 + 57 + 38,
                     child: Row(
@@ -38,21 +45,21 @@ class ViewTodo extends StatelessWidget {
                         IconButton(
                             onPressed: () {
                               _displayTextInputDialog(
-                                  id: "${snapshot.data!.docs[index].id}",
+                                  id: snapshot.data!.docs[index].id,
                                   context: context,
                                   title:
                                       "${snapshot.data!.docs[index]['title']}",
                                   dec:
                                       "${snapshot.data!.docs[index]['description']}");
                             },
-                            icon: Icon(Icons.edit)),
+                            icon: const Icon(Icons.edit)),
                         IconButton(
                             onPressed: () async {
                               todoCollection
-                                  .doc("${snapshot.data!.docs[index].id}")
+                                  .doc(snapshot.data!.docs[index].id)
                                   .delete();
                             },
-                            icon: Icon(Icons.delete)),
+                            icon: const Icon(Icons.delete)),
                         Switch(
                           value: snapshot.data!.docs[index]['isCompleted'],
                           onChanged: (v) {
@@ -61,6 +68,7 @@ class ViewTodo extends StatelessWidget {
                                 .doc(snapshot.data!.docs[index].id)
                                 .update({'isCompleted': v})
                                 .then(
+                                  // ignore: avoid_print
                                   (value) => print("User Updated"),
                                 )
                                 .catchError(
@@ -96,7 +104,7 @@ class ViewTodo extends StatelessWidget {
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: Text('TextField in Dialog'),
+            title: const Text('TextField in Dialog'),
             content: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
@@ -105,7 +113,7 @@ class ViewTodo extends StatelessWidget {
                   hint: "Enter the title",
                   textEditingController: _textEditingControllerTitle,
                 ),
-                SizedBox(
+                const SizedBox(
                   height: 20,
                 ),
                 TextBox(
@@ -118,7 +126,7 @@ class ViewTodo extends StatelessWidget {
               FlatButton(
                 color: Colors.red,
                 textColor: Colors.white,
-                child: Text('CANCEL'),
+                child: const Text('CANCEL'),
                 onPressed: () {
                   Navigator.pop(context);
                 },
@@ -126,7 +134,7 @@ class ViewTodo extends StatelessWidget {
               FlatButton(
                 color: Colors.green,
                 textColor: Colors.white,
-                child: Text('OK'),
+                child: const Text('OK'),
                 onPressed: () {
                   todoCollection.doc(id).update({
                     "title": _textEditingControllerTitle.text,
@@ -134,6 +142,7 @@ class ViewTodo extends StatelessWidget {
                   }).then((value) {
                     Navigator.pop(context);
                   }).catchError(
+                      // ignore: avoid_print
                       (error) => print("Failed to update user: $error"));
                 },
               ),
